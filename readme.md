@@ -8,7 +8,18 @@
 **Nivel:** Principiante / Intermedio.
 **Tiempo:** 120 minutos.
 
+--- 
 
+- [🕵️‍♂️ OPERACIÓN: GHOST PROTOCOL (Versión Construcción Paso a Paso)](#️️-operación-ghost-protocol-versión-construcción-paso-a-paso)
+  - [🛠️ FASE 1: Los Cimientos (.env)](#️-fase-1-los-cimientos-env)
+  - [🏗️ FASE 2: Levantando Servicios (Docker Compose)](#️-fase-2-levantando-servicios-docker-compose)
+    - [🧩 Paso 2.1: El Gestor de Archivos (Uploader)](#-paso-21-el-gestor-de-archivos-uploader)
+    - [🧩 Paso 2.2: El Navegador Seguro (Firefox)](#-paso-22-el-navegador-seguro-firefox)
+    - [🧩 Paso 2.3: Las Herramientas de Oficina (Obsidian y LibreOffice)](#-paso-23-las-herramientas-de-oficina-obsidian-y-libreoffice)
+    - [🧩 Paso 2.4: El Centro Multimedia (Jellyfin) y los Volúmenes](#-paso-24-el-centro-multimedia-jellyfin-y-los-volúmenes)
+  - [🔗 FASE 3: La Conexión (El gran reto)](#-fase-3-la-conexión-el-gran-reto)
+  - [🎬 FASE 5: Ejecución de la Misión](#-fase-5-ejecución-de-la-misión)
+  - [🎉 Misión Cumplida](#-misión-cumplida)
 
 -----
 
@@ -77,6 +88,7 @@ Copia y pega este bloque debajo de `services:`.
 Prueba el servicio con `docker compose up -d` y accede a `http://localhost:8080` (o el puerto que hayas puesto). Deberías ver la interfaz de Filebrowser. Prueba a subir un archivo para asegurarte de que funciona y ver donde se guarda en el sistema de archivos.
 
 :octocat: Haz un commit de tus cambios con el mensaje: `Paso 2.1 completado: Uploader configurado correctamente`.
+
 -----
 
 ### 🧩 Paso 2.2: El Navegador Seguro (Firefox)
@@ -98,6 +110,7 @@ Añade este bloque a continuación (cuidado con la alineación).
 > Prueba el servicio con `docker compose up -d` y accede a `http://localhost:5800` (o el puerto que hayas puesto). Deberías ver Firefox funcionando en tu navegador.
 
 :octocat: Haz un commit de tus cambios con el mensaje: `Paso 2.2 completado: Firefox configurado correctamente`.
+
 -----
 
 ### 🧩 Paso 2.3: Las Herramientas de Oficina (Obsidian y LibreOffice)
@@ -149,6 +162,7 @@ Prueba ambos servicios con `docker compose up -d` y accede a `http://localhost:3
 No configures nada dentro de Obsidian o LibreOffice todavía; solo asegúrate de que cargan correctamente.
 
 :octocat: Haz un commit de tus cambios con el mensaje: `Paso 2.3 completado: Obsidian y LibreOffice configurados correctamente`.
+
 -----
 
 ### 🧩 Paso 2.4: El Centro Multimedia (Jellyfin) y los Volúmenes
@@ -197,6 +211,7 @@ Cuando termines, aplica los cambios:
 
 
 :octocat: Haz un commit de tus cambios con el mensaje: `Paso 3 completado: Volúmenes conectados correctamente`.
+
 -----
 
 ## 🎬 FASE 5: Ejecución de la Misión
