@@ -1,88 +1,127 @@
-# 🕵️‍♂️ OPERACIÓN: GHOST PROTOCOL
+# 🕵️‍♂️ OPERACIÓN: GHOST PROTOCOL (Versión Construcción Paso a Paso)
 
 ![alt text](image.png)
 
---- 
+¡Agente\! Bienvenido a la **Operación: GHOST PROTOCOL**. Tu misión, si decides aceptarla, es reconstruir la infraestructura de servidores de *The Daily Leak*, un medio digital que ha sufrido un sabotaje interno.
 
-- [🕵️‍♂️ OPERACIÓN: GHOST PROTOCOL](#️️-operación-ghost-protocol)
-  - [Briefing](#briefing)
-  - [🛑 MISIÓN 1: Limpieza y Seguridad (.env) (45 min)](#-misión-1-limpieza-y-seguridad-env-45-min)
-  - [🔗 MISIÓN 2: La Tubería de Datos (45 min)](#-misión-2-la-tubería-de-datos-45-min)
-  - [🕵️‍♂️ MISIÓN 3: El Análisis Forense (30 min)](#️️-misión-3-el-análisis-forense-30-min)
+**Misión:** Reconstruir la infraestructura de servidores de *The Daily Leak*.
+**Nivel:** Principiante / Intermedio.
+**Tiempo:** 120 minutos.
 
----
 
-**Clasificación:** TOP SECRET
-**Tiempo límite:** 120 Minutos
-**Estado:** CRÍTICO
-
-## Briefing
-¡Atención, equipo\!
-
-La redacción de *The Daily Leak* ha sido comprometida. Hemos perdido el acceso a nuestros servidores físicos. Tenemos a 20 periodistas de investigación esperando en pisos francos para subir pruebas de corrupción, redactar artículos y analizar vídeos, pero **no tienen herramientas**.
-
-El anterior SysAdmin intentó levantar una infraestructura de emergencia en Docker antes de desaparecer, pero dejó el trabajo a medias, lleno de errores y sin cumplir los protocolos de seguridad.
-
-Vuestra misión es reactivar el sistema. Si falláis, la exclusiva se pierde.
 
 -----
 
-## 🛑 MISIÓN 1: Limpieza y Seguridad (.env) (45 min)
+## 🛠️ FASE 1: Los Cimientos (.env)
 
-**Informe de situación:**
-El archivo `docker-compose.yml` que nos dejó el anterior admin es un desastre.
+El primer error del anterior administrador fue escribir contraseñas y puertos directamente en el código. Nosotros usaremos variables.
 
-1.  Tiene errores de sintaxis que impiden que arranque.
-2.  Tiene **valores "hardcodeados"**. Por política de seguridad de la empresa, **NO** puede haber puertos ni rutas escritas directamente en el compose. Debéis usar un archivo `.env`.
-3.  Algunos nombres de imágenes son sospechosos.
+**TUS ÓRDENES:**
 
-**Objetivos:**
+1.  Crea un archivo llamado `.env`.
+2.  Copia este contenido dentro. Estas son las coordenadas seguras de nuestra misión:
 
-1.  Cread un archivo `.env` donde defináis las siguientes variables (ejemplo):
-      * `PORT_FILEBROWSER=8095`
-      * `PORT_JELLYFIN=8096`
-      * `PUID=1000`
-      * `RUTA_BASE=./redaccion_data`
-      * *(Y el resto de puertos necesarios)*
-2.  Sustituid los valores fijos en el `docker-compose.yml` por las variables (ejemplo: `${PORT_FILEBROWSER}:80`).
-3.  **Detectad y reparad los 3 sabotajes** que impiden el despliegue.
+<!-- end list -->
 
-**Recursos (El archivo corrupto):**
-*Copiad esto en vuestro editor. ¡Cuidado, está roto\!*
+```bash
+# Identificadores de usuario (seguridad)
+PUID=1000
+PGID=1000
+TZ=Europe/Madrid
+
+# Carpeta donde se guardarán los datos reales
+RUTA_BASE=./redaccion_data
+
+# Puertos seguros (Cambiados para evitar ataques)
+PORT_FILEBROWSER=8080
+PORT_FIREFOX=5800
+PORT_OBSIDIAN=3000
+PORT_LIBREOFFICE=3001
+PORT_JELLYFIN=8096
+```
+
+-----
+
+## 🏗️ FASE 2: Levantando Servicios (Docker Compose)
+
+Ahora crearemos el archivo `docker-compose.yml`. No lo haremos todo de golpe. Iremos servicio por servicio para detectar los sabotajes (errores) que dejó el traidor.
+
+Crea el archivo `docker-compose.yml` en la misma carpeta y empieza copiando esto:
 
 ```yaml
 version: "3.8"
 
 services:
+```
+
+### 🧩 Paso 2.1: El Gestor de Archivos (Uploader)
+
+Copia y pega este bloque debajo de `services:`.
+
+**⚠️ EL SABOTAJE:** El puerto está "hardcodeado" (fijo) en 80, lo cual es muy inseguro y chocará con tu sistema.
+
+```yaml
   uploader:
     image: filebrowser/filebrowser:v2.23.0
     container_name: uploader
     volumes:
       - ${RUTA_BASE}:/srv
-      - filebrowser_db:/database
     ports:
-      - "80:80"   # ERROR DE SEGURIDAD: Puerto 80 reservado por sistema, cambialo a variable
+      - "80:80"   # <--- ¡ERROR AQUÍ!
     restart: unless-stopped
+    
+```
 
+> **🔧 TU TAREA:** Borra `"80:80"` y cámbialo para que use la variable del puerto de Filebrowser que definiste en el archivo `.env`. Debería quedar algo como `"${NOMBRE_VARIABLE}:80"`.
+
+Prueba el servicio con `docker compose up -d` y accede a `http://localhost:8080` (o el puerto que hayas puesto). Deberías ver la interfaz de Filebrowser. Prueba a subir un archivo para asegurarte de que funciona y ver donde se guarda en el sistema de archivos.
+
+:octocat: Haz un commit de tus cambios con el mensaje: `Paso 2.1 completado: Uploader configurado correctamente`.
+-----
+
+### 🧩 Paso 2.2: El Navegador Seguro (Firefox)
+
+Añade este bloque a continuación (cuidado con la alineación).
+
+**⚠️ EL SABOTAJE:** El nombre de la imagen está incompleto. Docker no sabrá qué descargar.
+
+```yaml
   firefox:
-    image: jlesage/firefox-gui  # OJO: ¿Esta imagen existe así tal cual? Verificad en Docker Hub.
+    image: jlesage/firefox-gui   # <--- ¡ERROR AQUÍ! Falta algo al final...
     ports:
       - "${PORT_FIREFOX}:5800"
-    volumes:
-      - firefox_config:/config:rw
+      
+```
 
+> **🔧 TU TAREA:** Busca en Google "docker hub jlesage firefox gui" y averigua qué etiqueta (tag) suele ir al final del nombre de la imagen (pista: suele ser `:latest` o una versión numérica). Añádela.
+
+> Prueba el servicio con `docker compose up -d` y accede a `http://localhost:5800` (o el puerto que hayas puesto). Deberías ver Firefox funcionando en tu navegador.
+
+:octocat: Haz un commit de tus cambios con el mensaje: `Paso 2.2 completado: Firefox configurado correctamente`.
+-----
+
+### 🧩 Paso 2.3: Las Herramientas de Oficina (Obsidian y LibreOffice)
+
+Añade estos dos bloques.
+
+**⚠️ EL SABOTAJE:** Hay dos errores aquí.
+
+1.  **Sintaxis:** Alguien ha puesto demasiados espacios (indentación) en el nombre del contenedor de Obsidian.
+2.  **Lógica:** ¡LibreOffice está intentando usar el mismo puerto que Obsidian\!
+
+<!-- end list -->
+
+```yaml
   obsidian:
     image: lscr.io/linuxserver/obsidian:latest
-      container_name: obsidian  # ERROR DE SINTAXIS: Mala indentación
+      container_name: obsidian   # <--- ¡ERROR DE ESCRITURA! Demasiados espacios a la izquierda
     environment:
       - PUID=${PUID}
       - PGID=${PGID}
       - TZ=Etc/UTC
-    volumes:
-      - obsidian_config:/config
     ports:
-      - "3000:3000" # ERROR: Conflictos de puerto si no se parametrizan. Usad variables.
-      - "3001:3001" 
+      - "${PORT_OBSIDIAN}:3000"
+      - "3001:3001"
     shm_size: "1gb"
     restart: unless-stopped
 
@@ -93,14 +132,30 @@ services:
       - PUID=${PUID}
       - PGID=${PGID}
       - TZ=Etc/UTC
-    volumes:
-      - libreoffice_config:/config
     ports:
-      - "3000:3000" # ERROR LÓGICO: ¡Este puerto ya lo usa Obsidian!
-      - "3001:3001" 
+      - "${PORT_OBSIDIAN}:3000" # <--- ¡ERROR LÓGICO! Este puerto ya está ocupado arriba
+      - "3001:3001"
     shm_size: "1gb"
     restart: unless-stopped
+```
 
+> **🔧 TU TAREA:**
+>
+> 1.  Corrige los espacios en la línea `container_name` de Obsidian.
+> 2.  Cambia el puerto de LibreOffice para que use su propia variable (`PORT_LIBREOFFICE`) en lugar de robarle el puerto a Obsidian.
+
+Prueba ambos servicios con `docker compose up -d` y accede a `http://localhost:3000` para Obsidian y `http://localhost:3001` para LibreOffice (o los puertos que hayas puesto). Deberías ver ambas aplicaciones funcionando.
+
+No configures nada dentro de Obsidian o LibreOffice todavía; solo asegúrate de que cargan correctamente.
+
+:octocat: Haz un commit de tus cambios con el mensaje: `Paso 2.3 completado: Obsidian y LibreOffice configurados correctamente`.
+-----
+
+### 🧩 Paso 2.4: El Centro Multimedia (Jellyfin) y los Volúmenes
+
+Finalmente, añade el último servicio.
+
+```yaml
   jellyfin:
     image: jellyfin/jellyfin:latest
     container_name: jellyfin
@@ -109,96 +164,64 @@ services:
     environment:
       - TZ=Etc/UTC
     volumes:
-      - jellyfin_config:/config
+      - ./jellyfin_config:/config
     restart: unless-stopped
 
-volumes:
-  filebrowser_db:
-  firefox_config:
-  obsidian_config:
-  libreoffice_config:
-  jellyfin_config:
 ```
 
-> **🎖️ Checkpoint:** La misión se supera cuando ejecutáis `docker compose up -d` y TODOS los contenedores están en verde y accesibles.
+:octocat: Haz un commit de tus cambios con el mensaje: `Paso 2.4 completado: Jellyfin configurado correctamente`.
 
-> **📂 SUBIDA DE EVIDENCIA \#1: EL DESPLIEGUE**
-> Para confirmar que la infraestructura es segura, subid al campus una **captura de pantalla** que muestre:
->
-> 1.  Vuestro terminal ejecutando el comando `docker ps` (deben verse los 5 contenedores en estado "Up").
-> 2.  El contenido de vuestro archivo `.env` abierto en el editor (para verificar que no hay secretos hardcodeados).
+## 🔗 FASE 3: La Conexión (El gran reto)
 
+Ahora mismo, cada contenedor es una isla. Si descargas algo en Firefox, Jellyfin no lo ve. Tu misión es conectar todos a una carpeta común.
+
+**TUS ÓRDENES:**
+
+1.  Crea una carpeta llamada `redaccion_data` dentro de tu carpeta `GHOST` (si no se ha creado sola).
+2.  Edita tu `docker-compose.yml`. Tienes que añadir una línea extra en la sección `volumes:` de **CADA** servicio (uploader, firefox, obsidian, libreoffice, jellyfin).
+
+La línea debe seguir este esquema:
+`- ${RUTA_BASE}:/ruta_interna_del_contenedor`
+
+Usa esta "Chuleta de Rutas Internas" para saber qué poner a la derecha de los dos puntos `:` en cada servicio:
+
+  * **Para Firefox:** `/config/downloads`
+  * **Para Jellyfin:** `/media`
+  * **Para Obsidian y LibreOffice:** `/config/redaccion_data`
+  * **Para Uploader:** `/srv` (Esta ya venía puesta, revísala).
+
+> **💡 Pista:** Al final, el servicio de Firefox (por ejemplo) debería tener dos líneas en volúmenes. La de configuración (que ya estaba) y la nueva que tú has puesto.
+
+Cuando termines, aplica los cambios:
+`docker compose up -d`
+
+
+:octocat: Haz un commit de tus cambios con el mensaje: `Paso 3 completado: Volúmenes conectados correctamente`.
 -----
 
-## 🔗 MISIÓN 2: La Tubería de Datos (45 min)
+## 🎬 FASE 5: Ejecución de la Misión
 
-**Informe de situación:**
-El sistema arranca, pero es inútil.
-Un periodista sube una foto a través del "Gestor de Archivos" (Uploader), pero cuando abre LibreOffice para pegarla en su artículo... ¡la foto no está\! Y el editor de vídeo (Jellyfin) tampoco ve nada.
+Si has conectado todo bien, sigue estos pasos para superar la práctica:
 
-Cada contenedor es una isla y necesitamos un puente.
+1.  **Descarga:** Abre Firefox (`http://localhost:5800`), busca una imagen de "Top Secret" en Google y guárdala en `/config/downloads`.
+2.  **Verificación:** Abre el Uploader (`http://localhost:8080`). ¿Ves la imagen ahí? Si es así, **¡los volúmenes funcionan\!**
+3.  **Edición:** Abre LibreOffice (`http://localhost:3001`), crea un documento de texto, escribe "MISIÓN CUMPLIDA" e intenta insertar la imagen que descargaste (búscala en `/config/redaccion_data`).
+4.  **Guardado:** Guarda el documento como `INFORME_FINAL.odt`.
 
-**Objetivos:**
+> **🏆 ENTREGA FINAL:**
+> Sube una captura de pantalla donde se vea el **Uploader (Filebrowser)** mostrando el archivo `INFORME_FINAL.odt` que acabas de crear con LibreOffice. Esto demuestra que todos los sistemas están conectados.
+> Sube una captura de pantalla de los contenedores corriendo en Docker Desktop.
+> Sube los cambios de este repositorio.
 
-1.  Modificad el `docker-compose.yml`.
-2.  Todos los servicios (`uploader`, `firefox`, `obsidian`, `libreoffice`, `jellyfin`) deben tener acceso a una carpeta común en vuestro ordenador llamada `./redaccion_data`.
-3.  **Reto Técnico:** Tened cuidado con las rutas internas de cada contenedor:
-      * En **Filebrowser** la data va en `/srv`.
-      * En **Jellyfin** la data va en `/media`.
-      * En **LibreOffice** y **Obsidian**, investigad dónde guardan los documentos (pista: suele ser `/config` o una carpeta `/data` que debéis crear).
+--- 
+:octocat: Haz un commit final con el mensaje: `Misión completada: Todos los servicios funcionando y conectados`.
 
-**Prueba de fuego:**
-Debéis ser capaces de subir un archivo `.mp4` desde Filebrowser y reproducirlo inmediatamente en Jellyfin sin mover nada más.
+## 🎉 Misión Cumplida
+¡Felicidades, agente\! Has completado la Operación: GHOST PROTOCOL con éxito.
 
-> **🎖️ Checkpoint:** Enseñad al instructor cómo un archivo creado en LibreOffice aparece automáticamente en el Filebrowser.
+Recuerda borrar todos los contenedores y volúmenes creados para no dejar rastro de la misión:
+`docker compose down -v`
 
-> **📂 SUBIDA DE EVIDENCIA \#2: LA CONEXIÓN**
-> Necesitamos probar que la tubería de datos fluye. Subid **dos capturas de pantalla** (o un collage):
->
-> 1.  **Captura A:** LibreOffice abierto escribiendo un documento llamado "CONFIDENCIAL\_[VUESTRO\_NOMBRE].odt".
-> 2.  **Captura B:** El navegador web mostrando la interfaz de **Filebrowser** donde se vea claramente ese mismo archivo "CONFIDENCIAL\_[VUESTRO\_NOMBRE].odt" ya disponible para descarga.
+¡Hasta la próxima misión\!
 
------
-
-## 🕵️‍♂️ MISIÓN 3: El Análisis Forense (30 min)
-
-**Informe de situación:**
-¡Buen trabajo con la infraestructura\! Pero no hay tiempo para celebraciones.
-Nuestros informantes han dejado un "paquete digital" en una ubicación remota. Contiene la prueba definitiva del escándalo, pero está en un formato de vídeo que necesita ser analizado frame a frame.
-
-**Vuestra tarea es interceptar, almacenar y analizar la evidencia sin dejar rastro en vuestro ordenador personal (Host). Todo debe ocurrir dentro de los contenedores.**
-
-**Objetivos:**
-
-1.  **La Intercepción (Firefox):**
-
-      * Abrid el navegador seguro (Firefox).
-      * Acceded a la siguiente URL: `https://test-videos.co.uk/vids/bigbuckbunny/mp4/h264/1080/Big_Buck_Bunny_1080_10s_1MB.mp4`
-      * Descargad el vídeo y guardadlo **exclusivamente** en la carpeta compartida que configurasteis (`/config/downloads` o donde apuntara vuestro volumen).
-
-2.  **La Cadena de Custodia (Filebrowser):**
-
-      * Entrad al Gestor de Archivos.
-      * Verificad que el vídeo ha aparecido ahí.
-      * Renombrad el archivo a: `EVIDENCIA_FINAL_EQUIPO_[NUMERO].mp4`.
-      * Cread una carpeta llamada `CASO_CERRADO` y moved el vídeo dentro.
-
-3.  **El Análisis (Jellyfin):**
-
-      * Entrad a vuestro servidor multimedia Jellyfin.
-      * Si hicisteis bien la Misión 2, el vídeo debería aparecer automáticamente en la biblioteca (quizás tengáis que dar a "Escanear Biblioteca").
-      * Reproducid el vídeo.
-
-4.  **El Informe Final (Obsidian):**
-
-      * Abrid Obsidian.
-      * Cread una nota llamada **"CONCLUSIÓN"**.
-      * Escribid: *"La evidencia ha sido asegurada correctamente en el servidor. El sistema es estable."*
-      * **RETROALIMENTACIÓN VISUAL:** Insertad (embebed) el video o una captura de pantalla del video dentro de la nota de Obsidian (si la configuración lo permite) o simplemente dejad el enlace al archivo local.
-
-> **📂 SUBIDA DE EVIDENCIA \#3: INFORME FINAL**
-> Para cerrar el caso, subid una **captura de pantalla completa de vuestro escritorio** mostrando:
->
-> 1.  La nota de **Obsidian** abierta con el texto de "CONCLUSIÓN".
-> 2.  De fondo (o al lado), **Jellyfin** reproduciendo el vídeo `EVIDENCIA_FINAL_EQUIPO_[NUMERO].mp4`.
->     *Esto demostrará que la persistencia de datos, la red y las aplicaciones funcionan simultáneamente.*
+![alt text](image-1.png)
